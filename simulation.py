@@ -180,9 +180,7 @@ class Simulation:
         goal_x = (cell_x + 0.5) * self.cell_size
         goal_y = (cell_y + 0.5) * self.cell_size
 
-        dist_to_goal = math.hypot(goal_x - self.robot.x, goal_y - self.robot.y)
-
-        if self.waypoint_index >= len(self.robot.astar_path) - 1 and dist_to_goal < WAYPOINT_THRESHOLD:
+        if math.hypot(goal_x - self.robot.x, goal_y - self.robot.y) < WAYPOINT_THRESHOLD:
             self.done = True
             return
 
