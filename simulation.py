@@ -24,7 +24,7 @@ class Simulation:
         self.dt = dt
         self.angular_speed_k = angular_speed_k
 
-        self.measurements_pos_std = measurements_pos_std
+        self.measurements_pos_std = measurements_pos_std * cell_size
         self.measurements_theta_std = measurements_theta_std
         self.measurements_drop_prob = measurements_drop_prob
 
@@ -100,7 +100,7 @@ class Simulation:
             target_x = (cell_x + 0.5) * self.cell_size
             target_y = (cell_y + 0.5) * self.cell_size
             distance = math.hypot(target_x - x_est, target_y - y_est)
-            if distance < WAYPOINT_THRESHOLD and self.waypoint_index < len(self.robot.astar_path) - 1:
+            if distance < WAYPOINT_THRESHOLD * self.cell_size and self.waypoint_index < len(self.robot.astar_path) - 1:
                 self.waypoint_index += 1
                 continue
             break
@@ -121,9 +121,9 @@ class Simulation:
         omega = np.clip(omega, -MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED)
 
         if abs(angle_error) < ANGLE_THRESHOLD:
-            v = MAX_LINEAR_SPEED
+            v = MAX_LINEAR_SPEED * self.cell_size
         else:
-            v = MAX_LINEAR_SPEED * max(0.0, math.cos(angle_error))
+            v = MAX_LINEAR_SPEED * self.cell_size * max(0.0, math.cos(angle_error))
             if abs(angle_error) > 1.0:
                 v = 0.0
         return v, omega
@@ -134,8 +134,8 @@ class Simulation:
             return
 
         if not self.robot.astar_path:
-            x_cell = self.robot.x // self.cell_size
-            y_cell = self.robot.y // self.cell_size
+            x_cell = int(self.robot.x // self.cell_size)
+            y_cell = int(self.robot.y // self.cell_size)
             self.robot.astar_path = self.a_star((x_cell, y_cell), (self.robot.home_x, self.robot.home_y))
             self.robot.true_path.append((self.robot.x, self.robot.y, self.robot.theta))
             if not self.robot.astar_path:
@@ -155,7 +155,7 @@ class Simulation:
         x = x + v * math.cos(th) * self.dt
         y = y + v * math.sin(th) * self.dt
         th = normalize_angle(th + omega * self.dt)
-        self.robot.x, self.robot.y, self.robot.theta = np.array([x, y, th], dtype=float)
+        self.robot.x, self.robot.y, self.robot.theta = x, y, th
         self.robot.true_path.append((self.robot.x, self.robot.y, self.robot.theta))
 
         # measurements
@@ -180,7 +180,7 @@ class Simulation:
         goal_x = (cell_x + 0.5) * self.cell_size
         goal_y = (cell_y + 0.5) * self.cell_size
 
-        if math.hypot(goal_x - self.robot.x, goal_y - self.robot.y) < WAYPOINT_THRESHOLD:
+        if math.hypot(goal_x - self.robot.x, goal_y - self.robot.y) < WAYPOINT_THRESHOLD * 0.5 * self.cell_size:
             self.done = True
             return
 

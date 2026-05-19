@@ -3,15 +3,12 @@ import random
 import numpy as np
 import math
 
-def normalize_angle(angle):
+
+def normalize_angle(angle: float) -> float:
     """
     angle -> [-pi, pi]
     """
-    while angle > math.pi:
-        angle -= 2 * math.pi
-    while angle < -math.pi:
-        angle += 2 * math.pi
-    return angle
+    return (angle + math.pi) % (2 * math.pi) - math.pi
 
 class EKF:
     def __init__(self, x0, P0, Q, R):
@@ -29,9 +26,15 @@ class EKF:
         y_new = y + v * math.sin(th) * dt
         self.x = np.array([x_new, y_new, th_new], dtype=float)
 
+        # F = np.array([
+        #     [1.0, 0.0, 0],
+        #     [0.0, 1.0,  0],
+        #     [0.0, 0.0, 1.0],
+        # ], dtype=float)
+
         F = np.array([
-            [1.0, 0.0, 0],
-            [0.0, 1.0,  0],
+            [1.0, 0.0, -v * math.sin(th) * dt],
+            [0.0, 1.0, v * math.cos(th) * dt],
             [0.0, 0.0, 1.0],
         ], dtype=float)
         self.P = F @ self.P @ F.T + self.Q
@@ -141,18 +144,22 @@ class ParticleFilter:
         self.n = num_particles
         self.particles = np.zeros((self.n, 3), dtype=float)
         self.weights = np.ones(self.n, dtype=float) / self.n
-        self.init_around(x0)
 
-        self.POS_STD = POS_STD
+        from config import CELL_SIZE  # TODO refactor
+
+        self.POS_STD = POS_STD * CELL_SIZE
         self.THETA_STD = THETA_STD
-        self.MEAS_POS_STD = MEAS_POS_STD
+
+        self.MEAS_POS_STD = MEAS_POS_STD * CELL_SIZE
         self.MEAS_THETA_STD = MEAS_THETA_STD
+
+        self.init_around(x0)
 
     def init_around(self, x0):
         x, y, th = x0
-        self.particles[:, 0] = np.random.normal(x, 0.20, self.n)
-        self.particles[:, 1] = np.random.normal(y, 0.20, self.n)
-        self.particles[:, 2] = np.array([normalize_angle(t) for t in np.random.normal(th, 0.12, self.n)])
+        self.particles[:, 0] = np.random.normal(x, self.POS_STD, self.n)
+        self.particles[:, 1] = np.random.normal(y, self.POS_STD, self.n)
+        self.particles[:, 2] = np.array([normalize_angle(t) for t in np.random.normal(th, self.THETA_STD, self.n)])
         self.weights[:] = 1.0 / self.n
 
     def predict(self, u, dt):
@@ -199,15 +206,9 @@ class ParticleFilter:
         if neff > self.n * 0.6:
             return
         positions = (np.arange(self.n) + random.random()) / self.n
-        indexes = np.zeros(self.n, dtype=int)
         cumulative_sum = np.cumsum(self.weights)
-        i, j = 0, 0
-        while i < self.n:
-            if positions[i] < cumulative_sum[j]:
-                indexes[i] = j
-                i += 1
-            else:
-                j += 1
+        cumulative_sum[-1] = 1.0
+        indexes = np.searchsorted(cumulative_sum, positions)
         self.particles = self.particles[indexes]
         self.weights[:] = 1.0 / self.n
 

@@ -5,21 +5,21 @@ GRID_W = 20
 GRID_H = 20
 CELL_SIZE = 40
 
-DT = 0.5
-MAX_LINEAR_SPEED = 1.4 # cells / sec
-MAX_ANGULAR_SPEED = 3.0 # rad / sec
+DT = 0.1
+MAX_LINEAR_SPEED = 1 # cells / sec
+MAX_ANGULAR_SPEED = 1.5 # rad / sec
 ANGULAR_SPEED_K = 1.3
 WAYPOINT_THRESHOLD = 0.45 # cells
 ANGLE_THRESHOLD = 0.25 # rad
 
-MEAS_POS_STD = 5.4          # measurement noise in cells
+MEAS_POS_STD = 0.3          # measurement noise in cells
 MEAS_THETA_STD = 1.18        # rad
 MEAS_DROP_PROB = 0.04        # occasional missed camera detection
 
 KALMAN_Q = np.diag([0.2, 0.2, 0.03]) ** 2
-KALMAN_R = np.diag([MEAS_POS_STD, MEAS_POS_STD, MEAS_THETA_STD]) ** 2
+KALMAN_R = np.diag([MEAS_POS_STD*CELL_SIZE, MEAS_POS_STD*CELL_SIZE, MEAS_THETA_STD]) ** 2
 
-PF_POS_STD = 0.12
+PF_POS_STD = 0.3 # cells
 PF_THETA_STD = 0.06
 
 

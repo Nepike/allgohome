@@ -447,7 +447,6 @@ class MainWindow(QMainWindow):
 
         self.filters_plot.setMinimumHeight(620)
         right_layout.addWidget(self.filters_plot)
-        right_layout.addWidget(self.filters_plot)
         right_layout.addWidget(self.filters_plot.get_toolbar())
         right_layout.addStretch()
 
@@ -456,6 +455,7 @@ class MainWindow(QMainWindow):
         # ==============================================
         # SIGNALS
         # ==============================================
+        # TODO - перенести этот ужас в методы
         def draw_wall_callback():
             if self.map_widget.current_action == "draw":
                 self.unsetCursor()
