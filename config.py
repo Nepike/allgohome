@@ -19,6 +19,7 @@ MEAS_DROP_PROB = 0.04        # occasional missed camera detection
 KALMAN_Q = np.diag([0.2, 0.2, 0.03]) ** 2
 KALMAN_R = np.diag([MEAS_POS_STD*CELL_SIZE, MEAS_POS_STD*CELL_SIZE, MEAS_THETA_STD]) ** 2
 
+PF_N_PARTICLES = 100
 PF_POS_STD = 0.3 # cells
 PF_THETA_STD = 0.06
 
