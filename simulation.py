@@ -37,7 +37,7 @@ class Simulation:
         self.ekf = EKF(np.array([self.robot.x, self.robot.y, self.robot.theta]), np.eye(3) * 0.2, Kalman_Q, Kalman_R)
         self.ukf = UKF(np.array([self.robot.x, self.robot.y, self.robot.theta]), np.eye(3) * 0.2, Kalman_Q, Kalman_R)
         self.pf = ParticleFilter(np.array([self.robot.x, self.robot.y, self.robot.theta]),
-                                 100, PF_pos_std, PF_theta_std, measurements_pos_std, measurements_theta_std)
+                                 PF_N_PARTICLES, PF_pos_std, PF_theta_std, measurements_pos_std, measurements_theta_std)
 
     def a_star(self, start, goal):
         if start in self.blocked or goal in self.blocked:
